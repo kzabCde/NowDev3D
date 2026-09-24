@@ -2,7 +2,7 @@
 
 import { Float, Grid, Html, Sparkles } from "@react-three/drei";
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { projects, type Project } from "@/lib/projects";
 
@@ -26,9 +26,8 @@ function Shape({ shape }: { shape: Project["shape"] }) {
 function ProjectNode({ project, selected, onSelect }: { project: Project; selected: boolean; onSelect: (id: string) => void }) {
   const group = useRef<THREE.Group>(null);
   const ring = useRef<THREE.Mesh>(null);
+  const targetScaleRef = useRef(new THREE.Vector3(1, 1, 1));
   const [hovered, setHovered] = useState(false);
-  const basePosition = useMemo(() => new THREE.Vector3(...project.position), [project.position]);
-  const targetScale = useMemo(() => new THREE.Vector3(1, 1, 1), []);
 
   useEffect(() => {
     document.body.style.cursor = hovered ? "pointer" : "default";
@@ -37,11 +36,12 @@ function ProjectNode({ project, selected, onSelect }: { project: Project; select
 
   useFrame((state, delta) => {
     if (!group.current) return;
-    const scale = hovered || selected ? 1.18 : 1;
-    targetScale.setScalar(scale);
+
+    const targetScale = targetScaleRef.current;
+    targetScale.setScalar(hovered || selected ? 1.18 : 1);
     group.current.scale.lerp(targetScale, 1 - Math.exp(-8 * delta));
     group.current.rotation.y += delta * 0.16;
-    group.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.45 + basePosition.x) * 0.08;
+    group.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.45 + project.position[0]) * 0.08;
 
     if (ring.current) {
       ring.current.rotation.z -= delta * 0.2;
@@ -124,26 +124,30 @@ function Core() {
 
 function CameraRig({ enabled, selectedId }: { enabled: boolean; selectedId: string | null }) {
   const { camera, pointer } = useThree();
-  const base = useMemo(() => new THREE.Vector3(0, 0.2, 8.8), []);
-  const lookAt = useMemo(() => new THREE.Vector3(0, 0, 0), []);
-  const target = useMemo(() => new THREE.Vector3(), []);
+  const targetRef = useRef(new THREE.Vector3(0, 0.2, 8.8));
+  const lookAtRef = useRef(new THREE.Vector3(0, 0, 0));
 
   useFrame((_, delta) => {
     const selected = projects.find((project) => project.id === selectedId);
+    const target = targetRef.current;
+    const lookAt = lookAtRef.current;
+
     if (selected) {
       target.set(selected.position[0] * 0.22, selected.position[1] * 0.18 + 0.25, 7.15);
       lookAt.set(selected.position[0] * 0.28, selected.position[1] * 0.24, selected.position[2]);
     } else {
-      target.copy(base);
-      if (enabled) {
-        target.x += pointer.x * 0.42;
-        target.y += pointer.y * 0.28;
-      }
+      target.set(
+        enabled ? pointer.x * 0.42 : 0,
+        0.2 + (enabled ? pointer.y * 0.28 : 0),
+        8.8,
+      );
       lookAt.set(0, 0.05, 0);
     }
+
     camera.position.lerp(target, 1 - Math.exp(-2.7 * delta));
     camera.lookAt(lookAt);
   });
+
   return null;
 }
 
