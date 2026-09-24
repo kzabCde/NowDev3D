@@ -6,7 +6,8 @@ export type Project = {
   description: string;
   accent: string;
   position: [number, number, number];
-  shape: "icosa" | "box" | "octa" | "torus" | "sphere" | "dodeca";
+  modelPath: string;
+  chapter: string;
   stack: string[];
   liveUrl: string;
 };
@@ -19,9 +20,10 @@ export const projects: Project[] = [
     category: "Environmental Intelligence",
     description:
       "ระบบติดตาม PM2.5, AQI และพยากรณ์คุณภาพอากาศ 7 วัน พร้อม pipeline สำหรับ model evaluation และ production forecasting.",
-    accent: "#65f4c2",
-    position: [-3.2, 1.35, -0.6],
-    shape: "icosa",
+    accent: "#5df7d2",
+    position: [-3.6, 1.65, -1.2],
+    modelPath: "/models/air-node.glb",
+    chapter: "Atmospheric signal node",
     stack: ["Next.js", "LightGBM", "Supabase", "Vercel"],
     liveUrl: "https://northeastthailand-airquality.vercel.app/system",
   },
@@ -32,9 +34,10 @@ export const projects: Project[] = [
     category: "Market Intelligence",
     description:
       "แดชบอร์ดหุ้นแบบ interactive สำหรับติดตาม Magnificent Seven, watchlist, ranking, momentum และการเปรียบเทียบผลตอบแทนหลายช่วงเวลา.",
-    accent: "#8ea8ff",
-    position: [3.1, 1.7, -0.9],
-    shape: "box",
+    accent: "#7b8dff",
+    position: [3.35, 1.75, -1.55],
+    modelPath: "/models/stock-node.glb",
+    chapter: "Market pulse node",
     stack: ["Next.js", "Yahoo Finance", "Charts", "i18n"],
     liveUrl: "https://nowhereinsidestock.vercel.app/",
   },
@@ -45,9 +48,10 @@ export const projects: Project[] = [
     category: "Vehicle Diagnostics",
     description:
       "แอปเครื่องมือรถยนต์สำหรับ OBD monitoring, performance measurement และข้อมูลการขับขี่ที่อ่านง่ายบนอุปกรณ์พกพา.",
-    accent: "#ffb36b",
-    position: [-3.65, -1.35, -1.4],
-    shape: "octa",
+    accent: "#ff9b5d",
+    position: [-4.1, -1.55, -2.25],
+    modelPath: "/models/obd-node.glb",
+    chapter: "Telemetry signal node",
     stack: ["Android", "OBD2", "Telemetry", "UX"],
     liveUrl: "https://nowtuneup.vercel.app/",
   },
@@ -58,9 +62,10 @@ export const projects: Project[] = [
     category: "Creative Utility",
     description:
       "เครื่องมือจัดการภาพบนเว็บที่รวม watermark, resize, transform, live preview และ export workflow ไว้ในพื้นที่ทำงานเดียว.",
-    accent: "#ef8cff",
-    position: [3.45, -1.2, -1.25],
-    shape: "torus",
+    accent: "#e77cff",
+    position: [3.85, -1.25, -2.05],
+    modelPath: "/models/mark-node.glb",
+    chapter: "Visual creation node",
     stack: ["Next.js", "Canvas", "Image Tools", "UX"],
     liveUrl: "https://nowhere-mark.vercel.app/editor",
   },
@@ -71,9 +76,10 @@ export const projects: Project[] = [
     category: "Business Platform",
     description:
       "ระบบ ERP แบบ multi-company และ multi-account พร้อมโครงสร้าง subscription และอินเทอร์เฟซสองภาษา.",
-    accent: "#74d7ff",
-    position: [-1.45, -2.25, -2.4],
-    shape: "dodeca",
+    accent: "#55c9ff",
+    position: [-1.7, -3.05, -3.15],
+    modelPath: "/models/erp-node.glb",
+    chapter: "Operations system node",
     stack: ["Next.js", "Database", "Multi-tenant", "i18n"],
     liveUrl: "https://nowerp.vercel.app/th",
   },
@@ -84,9 +90,10 @@ export const projects: Project[] = [
     category: "Portfolio System",
     description:
       "ศูนย์รวมโปรเจกต์และงานทดลองของ NowhereDEV ที่พัฒนาอย่างต่อเนื่อง ตั้งแต่ AI, data, utility ไปจนถึง interactive web experiences.",
-    accent: "#f3f5ff",
-    position: [1.2, -2.45, -2.5],
-    shape: "sphere",
+    accent: "#f2f4ff",
+    position: [1.55, -3.15, -3.3],
+    modelPath: "/models/portfolio-node.glb",
+    chapter: "Constellation root node",
     stack: ["Next.js", "Vercel", "Design System", "Projects"],
     liveUrl: "https://nowheredev.vercel.app/",
   },
