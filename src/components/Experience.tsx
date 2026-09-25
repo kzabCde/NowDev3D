@@ -10,7 +10,15 @@ const QUALITY_ORDER: QualityTier[] = ["low", "balanced", "ultra"];
 function LoadingOverlay() {
   const { active, progress, loaded, total, item } = useProgress();
   const visible = active || progress < 100;
-  return <div className={`loading-screen ${visible ? "is-visible" : "is-complete"}`} aria-live="polite" aria-busy={visible}><div className="loading-core" aria-hidden="true"><span /><i /><b /></div><p>NEURAL GALAXY / SYNCHRONIZING NODES</p><strong>{Math.round(progress)}%</strong><div className="loading-track"><span style={{ width: `${progress}%` }} /></div><small>{total > 0 ? `${loaded}/${total} ASSETS` : "INITIALIZING WEBGL"}{item ? ` · ${item.split("/").pop()}` : ""}</small></div>;
+  return (
+    <div className={`loading-screen ${visible ? "is-visible" : "is-complete"}`} aria-live="polite" aria-busy={visible}>
+      <div className="loading-core" aria-hidden="true"><span /><i /><b /></div>
+      <p>MONOCHROME GRID / CALIBRATING SURFACES</p>
+      <strong>{Math.round(progress)}%</strong>
+      <div className="loading-track"><span style={{ width: `${progress}%` }} /></div>
+      <small>{total > 0 ? `${loaded}/${total} OBJECTS` : "INITIALIZING WEBGL"}{item ? ` · ${item.split("/").pop()}` : ""}</small>
+    </div>
+  );
 }
 
 type NavigatorWithHints = Navigator & { deviceMemory?: number; connection?: { saveData?: boolean; effectiveType?: string } };
@@ -51,17 +59,39 @@ export function Experience() {
   useEffect(() => { const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)"); if (!reducedMotion.matches) return; const frame = requestAnimationFrame(() => setSceneEnabled(false)); return () => cancelAnimationFrame(frame); }, []);
   useEffect(() => {
     let frame = 0;
-    const update = () => { const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1); const progress = Math.min(Math.max(window.scrollY / max, 0), 1); setScrollProgress(progress); setActiveIndex(Math.min(projects.length + 1, Math.round(progress * (projects.length + 1)))); };
+    const update = () => {
+      const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+      const progress = Math.min(Math.max(window.scrollY / max, 0), 1);
+      setScrollProgress(progress);
+      setActiveIndex(Math.min(projects.length + 1, Math.round(progress * (projects.length + 1))));
+    };
     const onScroll = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(update); };
-    frame = requestAnimationFrame(update); window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", onScroll);
+    frame = requestAnimationFrame(update);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
     return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); };
   }, []);
-  useEffect(() => { if (!focusId) return; const startFrame = requestAnimationFrame(() => setTransitionVisible(true)); const timer = window.setTimeout(() => setTransitionVisible(false), 520); return () => { cancelAnimationFrame(startFrame); window.clearTimeout(timer); }; }, [focusId]);
+  useEffect(() => {
+    if (!focusId) return;
+    const startFrame = requestAnimationFrame(() => setTransitionVisible(true));
+    const timer = window.setTimeout(() => setTransitionVisible(false), 500);
+    return () => { cancelAnimationFrame(startFrame); window.clearTimeout(timer); };
+  }, [focusId]);
   useEffect(() => {
     if (manualQuality || metrics.fps === 0) return;
-    if (metrics.fps < 40) { lowFpsStreak.current += 1; highFpsStreak.current = 0; } else if (metrics.fps > 57) { highFpsStreak.current += 1; lowFpsStreak.current = 0; } else { lowFpsStreak.current = 0; highFpsStreak.current = 0; }
-    if (lowFpsStreak.current >= 2) { lowFpsStreak.current = 0; const next = lowerQuality(quality); if (next !== quality) { const frame = requestAnimationFrame(() => setQuality(next)); return () => cancelAnimationFrame(frame); } }
-    if (highFpsStreak.current >= 6) { highFpsStreak.current = 0; const next = raiseQuality(quality, qualityCeiling); if (next !== quality) { const frame = requestAnimationFrame(() => setQuality(next)); return () => cancelAnimationFrame(frame); } }
+    if (metrics.fps < 40) { lowFpsStreak.current += 1; highFpsStreak.current = 0; }
+    else if (metrics.fps > 57) { highFpsStreak.current += 1; lowFpsStreak.current = 0; }
+    else { lowFpsStreak.current = 0; highFpsStreak.current = 0; }
+    if (lowFpsStreak.current >= 2) {
+      lowFpsStreak.current = 0;
+      const next = lowerQuality(quality);
+      if (next !== quality) { const frame = requestAnimationFrame(() => setQuality(next)); return () => cancelAnimationFrame(frame); }
+    }
+    if (highFpsStreak.current >= 6) {
+      highFpsStreak.current = 0;
+      const next = raiseQuality(quality, qualityCeiling);
+      if (next !== quality) { const frame = requestAnimationFrame(() => setQuality(next)); return () => cancelAnimationFrame(frame); }
+    }
   }, [manualQuality, metrics.fps, quality, qualityCeiling]);
 
   const handleMetrics = useCallback((next: PerformanceMetrics) => setMetrics(next), []);
@@ -69,14 +99,96 @@ export function Experience() {
   const enableAutoQuality = () => { const detected = detectCapability(); setManualQuality(false); setQualityCeiling(detected.ceiling); setQuality(detected.tier); lowFpsStreak.current = 0; highFpsStreak.current = 0; };
 
   return (
-    <main className="experience-shell">
+    <main className="experience-shell phase04-shell">
       <LoadingOverlay />
-      <header className="topbar"><a className="brand" href="#genesis" aria-label="NowDev3D home"><span className="brand-mark" aria-hidden="true">N3</span><span><strong>NOWDEV3D</strong><small>CINEMATIC NEURAL GALAXY / PHASE 03</small></span></a><div className="topbar-actions phase3-actions"><span className="status-pill phase3-status"><i aria-hidden="true" /> {activeProjectId ? `${activeProjectId.toUpperCase()} NODE` : "GALAXY ONLINE"}</span><div className="quality-control" aria-label="3D quality controls"><button type="button" className={!manualQuality ? "is-active" : ""} onClick={enableAutoQuality}>AUTO</button>{QUALITY_ORDER.map((tier) => <button type="button" key={tier} className={manualQuality && quality === tier ? "is-active" : ""} onClick={() => chooseQuality(tier)}>{tier.toUpperCase()}</button>)}</div><button className="ghost-button" type="button" onClick={() => setSceneEnabled((value) => !value)} aria-pressed={!sceneEnabled}>{sceneEnabled ? "PAUSE SIGNAL" : "RESUME SIGNAL"}</button></div></header>
-      <div className="galaxy-stage" aria-label="Interactive neural galaxy project map"><SceneCanvas enabled={sceneEnabled} selectedId={selectedId} activeId={activeProjectId} scrollProgress={scrollProgress} quality={quality} onSelect={setSelectedId} onMetrics={handleMetrics} /><div className="galaxy-vignette" aria-hidden="true" /><div className={`node-transition ${transitionVisible ? "is-active" : ""}`} aria-hidden="true"><span /><small>LINKING NEURAL PATH</small><strong>{focusId ? focusId.toUpperCase() : "CORE"}</strong></div><div className="scene-hud hud-left" aria-hidden="true"><span>R3F / GLB / CINEMATIC FX</span><span>SCROLL VECTOR {String(activeIndex).padStart(2, "0")}</span></div><div className="scene-hud hud-right" aria-hidden="true"><span>{manualQuality ? "MANUAL" : "ADAPTIVE"} / {quality.toUpperCase()}</span><span>{Math.round(scrollProgress * 100)}% JOURNEY</span></div><div className="swipe-hint" aria-hidden="true">↔ SWIPE TO ORBIT</div></div>
-      <aside className="perf-monitor" aria-label="3D performance monitor"><div><span>FPS</span><strong>{metrics.fps || "--"}</strong></div><div><span>DRAW</span><strong>{metrics.calls}</strong></div><div><span>TRI</span><strong>{metrics.triangles >= 1000 ? `${(metrics.triangles / 1000).toFixed(1)}K` : metrics.triangles}</strong></div><div className="perf-gpu"><span>GPU</span><strong>{compactGpuName(metrics.gpu)}</strong></div></aside>
-      <div className="story-layer"><section className="story-chapter genesis" id="genesis"><div className="story-card story-card-large"><p className="eyebrow">NOWHEREDEV / CINEMATIC NEURAL GALAXY</p><h1>Enter the<br /><span>living network.</span></h1><p className="story-lead">Phase 03 ยกระดับแกนกลางเป็น hero core, ปรับคุณภาพกราฟิกตามอุปกรณ์และ FPS, รองรับ swipe camera บนมือถือ และใช้ cinematic transition เมื่อเชื่อมต่อไปยังแต่ละ node</p><div className="signal-tags" aria-label="Experience features"><span>HERO CORE</span><span>ADAPTIVE QUALITY</span><span>TOUCH ORBIT</span><span>GPU HUD</span></div><a className="scroll-link" href="#node-air">START TRANSMISSION <b aria-hidden="true">↓</b></a></div></section>{projects.map((project, index) => <section className={`story-chapter ${index % 2 === 0 ? "align-left" : "align-right"}`} id={`node-${project.id}`} key={project.id}><article className="story-card project-story" style={{ "--project-accent": project.accent } as CSSProperties}><div className="chapter-meta"><span>NODE {String(index + 1).padStart(2, "0")}</span><span>{project.chapter}</span></div><p className="project-category">{project.category}</p><h2>{project.name}</h2><p className="story-description">{project.description}</p><div className="tag-list">{project.stack.map((item) => <span key={item}>{item}</span>)}</div><button className="inspect-button" type="button" onClick={() => setSelectedId(project.id)}>INSPECT NODE <span aria-hidden="true">↗</span></button></article></section>)}<section className="story-chapter epilogue" id="network-map"><div className="story-card epilogue-card"><p className="eyebrow">NETWORK MAP / CINEMATIC LINK COMPLETE</p><h2>Six systems.<br />One adaptive constellation.</h2><p className="story-lead">Low ลด post-processing และใช้ procedural core, Balanced เปิด hero GLB + Bloom แบบเบา, ส่วน Ultra เพิ่ม neural crown, particles, DPR และ cinematic effects เต็มรูปแบบ</p><div className="project-mini-grid">{projects.map((project) => <button key={project.id} type="button" onClick={() => setSelectedId(project.id)} style={{ "--project-accent": project.accent } as CSSProperties}><small>{project.shortName}</small><strong>{project.name}</strong><i aria-hidden="true" /></button>)}</div></div></section></div>
-      <footer className="footer"><span>© 2026 NOWHEREDEV</span><span>PHASE 03 / ADAPTIVE CINEMATIC WEBGL</span><a href="https://github.com/kzabCde/NowDev3D" target="_blank" rel="noreferrer">SOURCE ↗</a></footer>
-      {selectedProject && <div className="detail-layer" role="presentation" onMouseDown={() => setSelectedId(null)}><article className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(event) => event.stopPropagation()} style={{ "--project-accent": selectedProject.accent } as CSSProperties}><div className="detail-head"><span>{selectedProject.shortName} / NEURAL NODE</span><button type="button" onClick={() => setSelectedId(null)} aria-label="Close project details">CLOSE ×</button></div><div className="detail-signal" aria-hidden="true"><span /><i /><b /></div><p className="detail-category">{selectedProject.category}</p><h2 id="detail-title">{selectedProject.name}</h2><p className="detail-description">{selectedProject.description}</p><div className="tag-list" aria-label="Technology stack">{selectedProject.stack.map((item) => <span key={item}>{item}</span>)}</div><a className="detail-link" href={selectedProject.liveUrl} target="_blank" rel="noreferrer">OPEN LIVE PROJECT <span aria-hidden="true">↗</span></a></article></div>}
+      <header className="topbar">
+        <a className="brand" href="#genesis" aria-label="NowDev3D home">
+          <span className="brand-mark" aria-hidden="true">N3</span>
+          <span><strong>NOWDEV3D</strong><small>MONOCHROME PRINTSTREAM / PHASE 04</small></span>
+        </a>
+        <div className="topbar-actions phase3-actions phase4-actions">
+          <span className="status-pill phase3-status"><i aria-hidden="true" /> {activeProjectId ? `${activeProjectId.toUpperCase()} / FOCUS` : "SYSTEM ONLINE"}</span>
+          <div className="quality-control" aria-label="3D quality controls">
+            <button type="button" className={!manualQuality ? "is-active" : ""} onClick={enableAutoQuality}>AUTO</button>
+            {QUALITY_ORDER.map((tier) => <button type="button" key={tier} className={manualQuality && quality === tier ? "is-active" : ""} onClick={() => chooseQuality(tier)}>{tier.toUpperCase()}</button>)}
+          </div>
+          <button className="ghost-button" type="button" onClick={() => setSceneEnabled((value) => !value)} aria-pressed={!sceneEnabled}>{sceneEnabled ? "FREEZE MOTION" : "RESUME MOTION"}</button>
+        </div>
+      </header>
+
+      <div className="galaxy-stage" aria-label="Interactive monochrome 3D project showroom">
+        <SceneCanvas enabled={sceneEnabled} selectedId={selectedId} activeId={activeProjectId} scrollProgress={scrollProgress} quality={quality} onSelect={setSelectedId} onMetrics={handleMetrics} />
+        <div className="galaxy-vignette" aria-hidden="true" />
+        <div className={`node-transition ${transitionVisible ? "is-active" : ""}`} aria-hidden="true"><span /><small>REFRACTING SIGNAL</small><strong>{focusId ? focusId.toUpperCase() : "CORE"}</strong></div>
+        <div className="scene-hud hud-left" aria-hidden="true"><span>R3F / GLB / MONO FX</span><span>FRAME {String(activeIndex).padStart(2, "0")}</span></div>
+        <div className="scene-hud hud-right" aria-hidden="true"><span>{manualQuality ? "MANUAL" : "ADAPTIVE"} / {quality.toUpperCase()}</span><span>{Math.round(scrollProgress * 100)}% / SIGNAL</span></div>
+        <div className="swipe-hint" aria-hidden="true">↔ SWIPE / ORBIT</div>
+      </div>
+
+      <aside className="perf-monitor" aria-label="3D performance monitor">
+        <div><span>FPS</span><strong>{metrics.fps || "--"}</strong></div>
+        <div><span>DRAW</span><strong>{metrics.calls}</strong></div>
+        <div><span>TRI</span><strong>{metrics.triangles >= 1000 ? `${(metrics.triangles / 1000).toFixed(1)}K` : metrics.triangles}</strong></div>
+        <div className="perf-gpu"><span>GPU / RENDERER</span><strong>{compactGpuName(metrics.gpu)}</strong></div>
+      </aside>
+
+      <div className="story-layer">
+        <section className="story-chapter genesis" id="genesis">
+          <div className="story-card story-card-large">
+            <p className="eyebrow">NOWHEREDEV / MONOCHROME SIGNAL SYSTEM</p>
+            <h1>Black. White.<br /><span>Still alive.</span></h1>
+            <p className="story-lead">Phase 04 เปลี่ยน Neural Galaxy ให้เป็น interactive sci-fi showroom แบบขาวดำ เน้น pearl-white object, graphite surface, technical graphics และ cinematic motion ที่นิ่ง คม และแม่นยำมากขึ้น โดยยังคง adaptive quality, touch orbit และ performance monitoring ครบทั้งหมด</p>
+            <div className="printstream-rail" aria-label="Monochrome material system">
+              <span>PS / 04<br />MONO SIGNAL</span>
+              <span>PEARL<br />SURFACE</span>
+              <span>GRAPHITE<br />CORE</span>
+              <span>PRECISION<br />MOTION</span>
+            </div>
+            <div className="signal-tags" aria-label="Experience features"><span>MONO CORE</span><span>ADAPTIVE QUALITY</span><span>TOUCH ORBIT</span><span>GPU HUD</span></div>
+            <a className="scroll-link" href="#node-air">ENTER SHOWROOM <b aria-hidden="true">↓</b></a>
+          </div>
+        </section>
+
+        {projects.map((project, index) => (
+          <section className={`story-chapter ${index % 2 === 0 ? "align-left" : "align-right"}`} id={`node-${project.id}`} key={project.id}>
+            <article className="story-card project-story" style={{ "--project-accent": project.accent } as CSSProperties}>
+              <div className="chapter-meta"><span>OBJECT {String(index + 1).padStart(2, "0")}</span><span>{project.chapter}</span></div>
+              <p className="project-category">{project.category}</p>
+              <h2>{project.name}</h2>
+              <p className="story-description">{project.description}</p>
+              <div className="tag-list">{project.stack.map((item) => <span key={item}>{item}</span>)}</div>
+              <button className="inspect-button" type="button" onClick={() => setSelectedId(project.id)}>INSPECT OBJECT <span aria-hidden="true">↗</span></button>
+            </article>
+          </section>
+        ))}
+
+        <section className="story-chapter epilogue" id="network-map">
+          <div className="story-card epilogue-card">
+            <p className="eyebrow">SHOWROOM INDEX / SIGNAL COMPLETE</p>
+            <h2>Six objects.<br />One monochrome system.</h2>
+            <p className="story-lead">สีถูกลดเหลือเพียง white, silver และ graphite เพื่อให้ geometry, light, motion และข้อมูลเป็นตัวนำสายตา ขณะที่ Low / Balanced / Ultra ยังคงปรับภาระ GPU ตามอุปกรณ์เหมือนเดิม</p>
+            <div className="project-mini-grid">
+              {projects.map((project) => <button key={project.id} type="button" onClick={() => setSelectedId(project.id)} style={{ "--project-accent": project.accent } as CSSProperties}><small>{project.shortName}</small><strong>{project.name}</strong><i aria-hidden="true" /></button>)}
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer className="footer"><span>© 2026 NOWHEREDEV</span><span>PHASE 04 / MONOCHROME PRINTSTREAM SYSTEM</span><a href="https://github.com/kzabCde/NowDev3D" target="_blank" rel="noreferrer">SOURCE ↗</a></footer>
+
+      {selectedProject && (
+        <div className="detail-layer" role="presentation" onMouseDown={() => setSelectedId(null)}>
+          <article className="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title" onMouseDown={(event) => event.stopPropagation()} style={{ "--project-accent": selectedProject.accent } as CSSProperties}>
+            <div className="detail-head"><span>{selectedProject.shortName} / MONO OBJECT</span><button type="button" onClick={() => setSelectedId(null)} aria-label="Close project details">CLOSE ×</button></div>
+            <div className="detail-signal" aria-hidden="true"><span /><i /><b /></div>
+            <p className="detail-category">{selectedProject.category}</p>
+            <h2 id="detail-title">{selectedProject.name}</h2>
+            <p className="detail-description">{selectedProject.description}</p>
+            <div className="tag-list" aria-label="Technology stack">{selectedProject.stack.map((item) => <span key={item}>{item}</span>)}</div>
+            <a className="detail-link" href={selectedProject.liveUrl} target="_blank" rel="noreferrer">OPEN LIVE PROJECT <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+      )}
     </main>
   );
 }

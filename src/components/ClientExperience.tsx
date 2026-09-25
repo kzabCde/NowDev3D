@@ -23,11 +23,11 @@ const HERO_MODEL_URL = "/models/neural-core-hero.glb";
 
 function BootScreen() {
   return (
-    <main className="experience-shell">
+    <main className="experience-shell phase04-shell">
       <div className="loading-screen is-visible" aria-live="polite" aria-busy="true">
         <div className="loading-core" aria-hidden="true"><span /><i /><b /></div>
-        <p>NEURAL GALAXY / INITIALIZING CLIENT</p>
-        <strong>3D</strong>
+        <p>MONOCHROME GRID / INITIALIZING CLIENT</p>
+        <strong>04</strong>
         <div className="loading-track"><span style={{ width: "42%" }} /></div>
         <small>CHECKING WEBGL + GLB INTEGRITY</small>
       </div>
@@ -37,13 +37,13 @@ function BootScreen() {
 
 function SafeExperience({ reason, onRetry }: { reason: string; onRetry: () => void }) {
   return (
-    <main className="experience-shell">
+    <main className="experience-shell phase04-shell">
       <header className="topbar">
         <a className="brand" href="#safe-projects" aria-label="NowDev3D safe mode">
           <span className="brand-mark" aria-hidden="true">N3</span>
           <span>
             <strong>NOWDEV3D</strong>
-            <small>SAFE MODE / 2D FALLBACK</small>
+            <small>MONOCHROME SAFE MODE / 2D FALLBACK</small>
           </span>
         </a>
         <div className="topbar-actions">
@@ -55,10 +55,10 @@ function SafeExperience({ reason, onRetry }: { reason: string; onRetry: () => vo
       <div className="story-layer">
         <section className="story-chapter genesis" id="safe-projects">
           <div className="story-card story-card-large">
-            <p className="eyebrow">NOWHEREDEV / COMPATIBILITY FALLBACK</p>
-            <h1>Galaxy online.<br /><span>3D isolated.</span></h1>
+            <p className="eyebrow">NOWHEREDEV / MONOCHROME RECOVERY LAYER</p>
+            <h1>System online.<br /><span>3D isolated.</span></h1>
             <p className="story-lead">
-              หน้าเว็บหลักยังใช้งานได้ แต่ระบบ 3D ถูกหยุดไว้เพื่อป้องกัน WebGL หรือ client runtime error
+              หน้าเว็บหลักยังใช้งานได้ แต่ระบบ 3D ถูกแยกออกเพื่อป้องกัน WebGL, asset หรือ client runtime error
               จากการทำให้ทั้งหน้าเว็บล้ม คุณยังสามารถเปิดทุกโปรเจกต์ได้จาก Safe Mode นี้
             </p>
             <p className="story-lead" style={{ fontFamily: "var(--font-mono)", fontSize: 11, opacity: 0.72 }}>
@@ -76,7 +76,7 @@ function SafeExperience({ reason, onRetry }: { reason: string; onRetry: () => vo
                     padding: 17,
                     borderRight: "1px solid var(--line)",
                     borderBottom: "1px solid var(--line)",
-                    background: "rgba(5,7,18,.48)",
+                    background: "rgba(255,255,255,.018)",
                     display: "block",
                   }}
                 >
@@ -91,7 +91,7 @@ function SafeExperience({ reason, onRetry }: { reason: string; onRetry: () => vo
 
       <footer className="footer">
         <span>© 2026 NOWHEREDEV</span>
-        <span>SAFE MODE / CLIENT RECOVERY</span>
+        <span>PHASE 04 / SAFE MODE / CLIENT RECOVERY</span>
         <a href="https://github.com/kzabCde/NowDev3D" target="_blank" rel="noreferrer">SOURCE ↗</a>
       </footer>
     </main>
@@ -143,9 +143,6 @@ function detectWebGL(): boolean {
 
 async function refreshAndValidateHero(signal: AbortSignal): Promise<string | null> {
   try {
-    // `reload` deliberately refreshes the exact legacy cache key. Earlier releases
-    // served this mutable filename with `immutable`, so a normal fetch can preserve
-    // a truncated GLB even after the CDN has a corrected asset.
     const response = await fetch(HERO_MODEL_URL, { cache: "reload", signal });
     if (!response.ok) return `Hero GLB returned HTTP ${response.status}.`;
     const buffer = await response.arrayBuffer();
@@ -172,7 +169,7 @@ async function refreshAndValidateHero(signal: AbortSignal): Promise<string | nul
       const chunkType = view.getUint32(offset + 4, true);
       offset += 8;
       if (offset + chunkLength > buffer.byteLength) return "Hero GLB chunk exceeds response bounds.";
-      if (chunkType === 0x4e4f534a) hasJson = true; // JSON
+      if (chunkType === 0x4e4f534a) hasJson = true;
       offset += chunkLength;
     }
     if (!hasJson || offset !== buffer.byteLength) return "Hero GLB chunk table is invalid.";

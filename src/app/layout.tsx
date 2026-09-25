@@ -2,17 +2,18 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import "./phase3.css";
+import "./phase4.css";
 
 export const metadata: Metadata = {
-  title: "NowDev3D — Cinematic Neural Galaxy",
+  title: "NowDev3D — Monochrome Printstream",
   description:
-    "A cinematic adaptive 3D portfolio by NowhereDEV built with Next.js, Three.js and React Three Fiber.",
+    "A monochrome cinematic 3D portfolio by NowhereDEV with adaptive WebGL, precision motion and premium black-and-white visual design.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#02030a",
+  themeColor: "#070707",
   colorScheme: "dark",
 };
 
