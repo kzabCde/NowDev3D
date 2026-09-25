@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from "react";
@@ -79,7 +80,7 @@ export function AirGraphic() {
           </g>
           <path data-draw-path className="air-line line-one" d={pathA} />
           <path data-draw-path className="air-line line-two" d={pathB} />
-          <path data-draw-path className="wind-vector" d="M78 112 C145 76, 215 92, 274 65 S402 56, 455 104" />
+          <path data-draw-path className="wind-vector" d="M78 112 C145 76,215 92,274 65 S402 56,455 104" />
           <g className="air-dots">
             {Array.from({ length: 16 }, (_, index) => (
               <circle key={index} cx={70 + (index % 8) * 54} cy={105 + Math.floor(index / 8) * 190} r={index % 3 === 0 ? 4 : 2} />
@@ -163,7 +164,7 @@ export function TuneupGraphic() {
         </div>
         <svg viewBox="0 0 500 360" aria-hidden="true">
           <path className="gauge-track" d="M80 275 A175 175 0 0 1 420 275" />
-          <path data-draw-path className="gauge-value" d="M80 275 A175 175 0 0 1 420 275" style={{ strokeDashoffset: gaugeOffset }} />
+          <path className="gauge-value" d="M80 275 A175 175 0 0 1 420 275" style={{ strokeDashoffset: gaugeOffset }} />
           {Array.from({ length: 13 }, (_, index) => {
             const angle = Math.PI * (1 + index / 12);
             const x1 = 250 + Math.cos(angle) * 150;
@@ -188,6 +189,7 @@ export function MarkGraphic() {
   const dragRef = useRef<{ pointerId: number; startX: number; startY: number; origin: CropPoint } | null>(null);
   const [crop, setCrop] = useState<CropPoint>({ x: 22, y: 20 });
 
+  const updateCrop = (next: CropPoint) => setCrop({ x: Math.max(5, Math.min(38, next.x)), y: Math.max(10, Math.min(32, next.y)) });
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -198,12 +200,17 @@ export function MarkGraphic() {
     const workspace = workspaceRef.current;
     if (!drag || !workspace || drag.pointerId !== event.pointerId) return;
     const rect = workspace.getBoundingClientRect();
-    const dx = ((event.clientX - drag.startX) / rect.width) * 100;
-    const dy = ((event.clientY - drag.startY) / rect.height) * 100;
-    setCrop({ x: Math.max(5, Math.min(38, drag.origin.x + dx)), y: Math.max(10, Math.min(32, drag.origin.y + dy)) });
+    updateCrop({ x: drag.origin.x + ((event.clientX - drag.startX) / rect.width) * 100, y: drag.origin.y + ((event.clientY - drag.startY) / rect.height) * 100 });
   };
   const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
+  };
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const step = event.shiftKey ? 4 : 1;
+    if (event.key === "ArrowLeft") { event.preventDefault(); updateCrop({ x: crop.x - step, y: crop.y }); }
+    if (event.key === "ArrowRight") { event.preventDefault(); updateCrop({ x: crop.x + step, y: crop.y }); }
+    if (event.key === "ArrowUp") { event.preventDefault(); updateCrop({ x: crop.x, y: crop.y - step }); }
+    if (event.key === "ArrowDown") { event.preventDefault(); updateCrop({ x: crop.x, y: crop.y + step }); }
   };
 
   return (
@@ -218,8 +225,12 @@ export function MarkGraphic() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
+          onKeyDown={onKeyDown}
           role="slider"
           aria-label="Crop frame position"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round((crop.x + crop.y) / 2)}
           aria-valuetext={`x ${Math.round(crop.x)}, y ${Math.round(crop.y)}`}
           tabIndex={0}
         >
@@ -242,7 +253,7 @@ type ErpModule = keyof typeof erpModules;
 
 export function ErpGraphic() {
   const [selected, setSelected] = useState<ErpModule>("revenue");
-  const module = erpModules[selected];
+  const selectedModule = erpModules[selected];
   return (
     <VisualFrame label="OPERATIONS CONSOLE" index="05" hint="SELECT A MODULE">
       <div className="erp-graphic interactive-erp">
@@ -253,8 +264,8 @@ export function ErpGraphic() {
             return <button type="button" key={key} className={`erp-module interactive-module ${selected === key ? "is-active" : ""}`} onClick={() => setSelected(key)}><small>{item.label}</small><strong>{item.value}</strong><span>{item.detail}</span></button>;
           })}
           <article className="erp-module module-wide lines" aria-live="polite">
-            <small>{module.label} / LIVE SAMPLE</small>
-            {module.rows.map((width, index) => <span key={index}><i style={{ width: `${width}%` }} /></span>)}
+            <small>{selectedModule.label} / LIVE SAMPLE</small>
+            {selectedModule.rows.map((width, index) => <span key={index}><i style={{ width: `${width}%` }} /></span>)}
           </article>
         </div>
         <div className="erp-matrix">{Array.from({ length: 30 }, (_, index) => <i key={index} />)}</div>
