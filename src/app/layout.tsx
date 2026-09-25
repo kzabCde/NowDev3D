@@ -1,19 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import "./globals.css";
-import "./phase3.css";
-import "./phase4.css";
+import "./phase5.css";
 
 export const metadata: Metadata = {
-  title: "NowDev3D — Monochrome Printstream",
+  title: "NowDev3D — Motion Presentation",
   description:
-    "A monochrome cinematic 3D portfolio by NowhereDEV with adaptive WebGL, precision motion and premium black-and-white visual design.",
+    "A monochrome motion-presentation portfolio by NowhereDEV with scroll-driven storytelling, project-specific graphics and lightweight WebGL.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#070707",
+  themeColor: "#050505",
   colorScheme: "dark",
 };
 

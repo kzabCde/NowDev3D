@@ -1,8 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Component, useEffect, useState, type ErrorInfo, type ReactNode } from "react";
-import { projects } from "@/lib/projects";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 const ExperienceClient = dynamic(
   () => import("./Experience").then((module) => module.Experience),
@@ -12,217 +11,63 @@ const ExperienceClient = dynamic(
   },
 );
 
-type SupportState = "checking" | "supported" | "unsupported" | "asset-error";
-
-type BoundaryState = {
-  failed: boolean;
-  message: string;
-};
-
-const HERO_MODEL_URL = "/models/neural-core-hero.glb";
-
 function BootScreen() {
   return (
-    <main className="experience-shell phase04-shell">
-      <div className="loading-screen is-visible" aria-live="polite" aria-busy="true">
-        <div className="loading-core" aria-hidden="true"><span /><i /><b /></div>
-        <p>MONOCHROME GRID / INITIALIZING CLIENT</p>
-        <strong>04</strong>
-        <div className="loading-track"><span style={{ width: "42%" }} /></div>
-        <small>CHECKING WEBGL + GLB INTEGRITY</small>
-      </div>
-    </main>
-  );
-}
-
-function SafeExperience({ reason, onRetry }: { reason: string; onRetry: () => void }) {
-  return (
-    <main className="experience-shell phase04-shell">
-      <header className="topbar">
-        <a className="brand" href="#safe-projects" aria-label="NowDev3D safe mode">
-          <span className="brand-mark" aria-hidden="true">N3</span>
-          <span>
-            <strong>NOWDEV3D</strong>
-            <small>MONOCHROME SAFE MODE / 2D FALLBACK</small>
-          </span>
-        </a>
-        <div className="topbar-actions">
-          <span className="status-pill"><i aria-hidden="true" /> SAFE MODE</span>
-          <button className="ghost-button" type="button" onClick={onRetry}>RETRY 3D</button>
+    <main className="motion-shell boot-shell">
+      <div className="boot-frame" aria-live="polite" aria-busy="true">
+        <span className="boot-index">05</span>
+        <div className="boot-copy">
+          <p>NOWHEREDEV / MOTION PRESENTATION</p>
+          <h1>Loading<br />the deck.</h1>
         </div>
-      </header>
-
-      <div className="story-layer">
-        <section className="story-chapter genesis" id="safe-projects">
-          <div className="story-card story-card-large">
-            <p className="eyebrow">NOWHEREDEV / MONOCHROME RECOVERY LAYER</p>
-            <h1>System online.<br /><span>3D isolated.</span></h1>
-            <p className="story-lead">
-              หน้าเว็บหลักยังใช้งานได้ แต่ระบบ 3D ถูกแยกออกเพื่อป้องกัน WebGL, asset หรือ client runtime error
-              จากการทำให้ทั้งหน้าเว็บล้ม คุณยังสามารถเปิดทุกโปรเจกต์ได้จาก Safe Mode นี้
-            </p>
-            <p className="story-lead" style={{ fontFamily: "var(--font-mono)", fontSize: 11, opacity: 0.72 }}>
-              DIAGNOSTIC: {reason}
-            </p>
-            <div className="project-mini-grid" style={{ marginTop: 38 }}>
-              {projects.map((project) => (
-                <a
-                  key={project.id}
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{
-                    minHeight: 108,
-                    padding: 17,
-                    borderRight: "1px solid var(--line)",
-                    borderBottom: "1px solid var(--line)",
-                    background: "rgba(255,255,255,.018)",
-                    display: "block",
-                  }}
-                >
-                  <small style={{ color: project.accent, fontFamily: "var(--font-mono)" }}>{project.shortName}</small>
-                  <strong style={{ display: "block", marginTop: 11 }}>{project.name}</strong>
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+        <div className="boot-line"><span /></div>
+        <small>PREPARING TYPOGRAPHY / MOTION / WEBGL</small>
       </div>
-
-      <footer className="footer">
-        <span>© 2026 NOWHEREDEV</span>
-        <span>PHASE 04 / SAFE MODE / CLIENT RECOVERY</span>
-        <a href="https://github.com/kzabCde/NowDev3D" target="_blank" rel="noreferrer">SOURCE ↗</a>
-      </footer>
     </main>
   );
 }
 
-class ExperienceBoundary extends Component<{ children: ReactNode }, BoundaryState> {
+type BoundaryState = { failed: boolean; message: string };
+
+class MotionBoundary extends Component<{ children: ReactNode }, BoundaryState> {
   state: BoundaryState = { failed: false, message: "" };
 
   static getDerivedStateFromError(error: unknown): BoundaryState {
-    const message = error instanceof Error ? error.message : "Unknown client-side 3D error";
-    return { failed: true, message };
+    return {
+      failed: true,
+      message: error instanceof Error ? error.message : "Unknown client runtime error",
+    };
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
-    console.error("[NowDev3D] client experience crashed", error, info.componentStack);
-    try {
-      const message = error instanceof Error ? error.message : String(error);
-      sessionStorage.setItem("nowdev3d:last-client-error", message.slice(0, 500));
-    } catch {
-      // Storage can be unavailable in hardened/private browsing modes.
-    }
+    console.error("[NowDev3D Phase05] motion deck crashed", error, info.componentStack);
   }
-
-  private retry = () => {
-    window.location.reload();
-  };
 
   render() {
-    if (this.state.failed) {
-      return <SafeExperience reason={this.state.message || "3D runtime failed"} onRetry={this.retry} />;
-    }
-    return this.props.children;
-  }
-}
-
-function detectWebGL(): boolean {
-  try {
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-    if (!context) return false;
-    const loseContext = context.getExtension("WEBGL_lose_context");
-    loseContext?.loseContext();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function refreshAndValidateHero(signal: AbortSignal): Promise<string | null> {
-  try {
-    const response = await fetch(HERO_MODEL_URL, { cache: "reload", signal });
-    if (!response.ok) return `Hero GLB returned HTTP ${response.status}.`;
-    const buffer = await response.arrayBuffer();
-    if (buffer.byteLength < 20) return `Hero GLB is too small (${buffer.byteLength} bytes).`;
-
-    const bytes = new Uint8Array(buffer);
-    if (bytes[0] !== 0x67 || bytes[1] !== 0x6c || bytes[2] !== 0x54 || bytes[3] !== 0x46) {
-      return "Hero GLB magic header is invalid.";
-    }
-
-    const view = new DataView(buffer);
-    const version = view.getUint32(4, true);
-    const declaredLength = view.getUint32(8, true);
-    if (version !== 2) return `Hero GLB version ${version} is unsupported.`;
-    if (declaredLength !== buffer.byteLength) {
-      return `Hero GLB length mismatch: header ${declaredLength}, response ${buffer.byteLength}.`;
-    }
-
-    let offset = 12;
-    let hasJson = false;
-    while (offset < buffer.byteLength) {
-      if (offset + 8 > buffer.byteLength) return "Hero GLB has a truncated chunk header.";
-      const chunkLength = view.getUint32(offset, true);
-      const chunkType = view.getUint32(offset + 4, true);
-      offset += 8;
-      if (offset + chunkLength > buffer.byteLength) return "Hero GLB chunk exceeds response bounds.";
-      if (chunkType === 0x4e4f534a) hasJson = true;
-      offset += chunkLength;
-    }
-    if (!hasJson || offset !== buffer.byteLength) return "Hero GLB chunk table is invalid.";
-    return null;
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "AbortError") return "Hero GLB check was cancelled.";
-    return `Hero GLB check failed: ${error instanceof Error ? error.message : String(error)}`;
+    if (!this.state.failed) return this.props.children;
+    return (
+      <main className="motion-shell fallback-shell">
+        <section className="fallback-card">
+          <p className="motion-kicker">NOWHEREDEV / RECOVERY VIEW</p>
+          <h1>Presentation<br />still accessible.</h1>
+          <p>
+            Motion runtime ถูกหยุดเพื่อป้องกันหน้าเว็บล้ม คุณยังสามารถเปิดโปรเจกต์ทั้งหมดจากหน้า portfolio หลักได้
+          </p>
+          <small>DIAGNOSTIC: {this.state.message}</small>
+          <div className="fallback-actions">
+            <button type="button" onClick={() => window.location.reload()}>RETRY EXPERIENCE</button>
+            <a href="https://nowheredev.vercel.app/" target="_blank" rel="noreferrer">OPEN NOWHEREDEV ↗</a>
+          </div>
+        </section>
+      </main>
+    );
   }
 }
 
 export function ClientExperience() {
-  const [support, setSupport] = useState<SupportState>("checking");
-  const [diagnostic, setDiagnostic] = useState("");
-
-  useEffect(() => {
-    const controller = new AbortController();
-    let disposed = false;
-
-    const initialize = async () => {
-      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      if (disposed) return;
-      if (!detectWebGL()) {
-        setDiagnostic("WebGL is unavailable or blocked by this browser/device.");
-        setSupport("unsupported");
-        return;
-      }
-
-      const heroError = await refreshAndValidateHero(controller.signal);
-      if (disposed) return;
-      if (heroError) {
-        setDiagnostic(heroError);
-        setSupport("asset-error");
-        return;
-      }
-      setSupport("supported");
-    };
-
-    void initialize();
-    return () => {
-      disposed = true;
-      controller.abort();
-    };
-  }, []);
-
-  if (support === "checking") return <BootScreen />;
-
-  if (support === "unsupported" || support === "asset-error") {
-    return <SafeExperience reason={diagnostic || "3D initialization failed."} onRetry={() => window.location.reload()} />;
-  }
-
   return (
-    <ExperienceBoundary>
+    <MotionBoundary>
       <ExperienceClient />
-    </ExperienceBoundary>
+    </MotionBoundary>
   );
 }
