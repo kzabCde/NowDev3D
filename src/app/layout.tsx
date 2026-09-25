@@ -3,11 +3,12 @@ import type { ReactNode } from "react";
 import "./phase5.css";
 import "./phase51.css";
 import "./phase51-runtime.css";
+import "./phase52.css";
 
 export const metadata: Metadata = {
-  title: "NowDev3D — Motion Art Direction",
+  title: "NowDev3D — Interactive Motion Portfolio",
   description:
-    "A monochrome motion-design portfolio by NowhereDEV with cinematic slide transitions, kinetic typography, SVG path animation and lightweight WebGL.",
+    "A responsive monochrome motion portfolio by NowhereDEV with interactive project micro-demos, cinematic transitions and lightweight WebGL.",
 };
 
 export const viewport: Viewport = {
