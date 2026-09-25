@@ -13,15 +13,15 @@ const ExperienceClient = dynamic(
 
 function BootScreen() {
   return (
-    <main className="motion-shell boot-shell">
+    <main className="motion-shell boot-shell phase51">
       <div className="boot-frame" aria-live="polite" aria-busy="true">
-        <span className="boot-index">05</span>
+        <span className="boot-index">05.1</span>
         <div className="boot-copy">
-          <p>NOWHEREDEV / MOTION PRESENTATION</p>
-          <h1>Loading<br />the deck.</h1>
+          <p>NOWHEREDEV / MOTION ART DIRECTION</p>
+          <h1>Preparing<br />the reel.</h1>
         </div>
         <div className="boot-line"><span /></div>
-        <small>PREPARING TYPOGRAPHY / MOTION / WEBGL</small>
+        <small>MASK / TYPE / SVG / CINEMATIC WEBGL</small>
       </div>
     </main>
   );
@@ -33,31 +33,23 @@ class MotionBoundary extends Component<{ children: ReactNode }, BoundaryState> {
   state: BoundaryState = { failed: false, message: "" };
 
   static getDerivedStateFromError(error: unknown): BoundaryState {
-    return {
-      failed: true,
-      message: error instanceof Error ? error.message : "Unknown client runtime error",
-    };
+    return { failed: true, message: error instanceof Error ? error.message : "Unknown client runtime error" };
   }
 
   componentDidCatch(error: unknown, info: ErrorInfo) {
-    console.error("[NowDev3D Phase05] motion deck crashed", error, info.componentStack);
+    console.error("[NowDev3D Phase05.1] motion reel crashed", error, info.componentStack);
   }
 
   render() {
     if (!this.state.failed) return this.props.children;
     return (
-      <main className="motion-shell fallback-shell">
+      <main className="motion-shell fallback-shell phase51">
         <section className="fallback-card">
-          <p className="motion-kicker">NOWHEREDEV / RECOVERY VIEW</p>
-          <h1>Presentation<br />still accessible.</h1>
-          <p>
-            Motion runtime ถูกหยุดเพื่อป้องกันหน้าเว็บล้ม คุณยังสามารถเปิดโปรเจกต์ทั้งหมดจากหน้า portfolio หลักได้
-          </p>
+          <p className="motion-kicker">NOWHEREDEV / MOTION RECOVERY VIEW</p>
+          <h1>Reel interrupted.<br />Portfolio available.</h1>
+          <p>Motion runtime ถูกแยกออกเพื่อไม่ให้ presentation crash กระทบการเข้าถึงโปรเจกต์หลัก คุณยังสามารถเปิด portfolio ได้ตามปกติ</p>
           <small>DIAGNOSTIC: {this.state.message}</small>
-          <div className="fallback-actions">
-            <button type="button" onClick={() => window.location.reload()}>RETRY EXPERIENCE</button>
-            <a href="https://nowheredev.vercel.app/" target="_blank" rel="noreferrer">OPEN NOWHEREDEV ↗</a>
-          </div>
+          <div className="fallback-actions"><button type="button" onClick={() => window.location.reload()}>RETRY REEL</button><a href="https://nowheredev.vercel.app/" target="_blank" rel="noreferrer">OPEN NOWHEREDEV ↗</a></div>
         </section>
       </main>
     );
@@ -65,9 +57,5 @@ class MotionBoundary extends Component<{ children: ReactNode }, BoundaryState> {
 }
 
 export function ClientExperience() {
-  return (
-    <MotionBoundary>
-      <ExperienceClient />
-    </MotionBoundary>
-  );
+  return <MotionBoundary><ExperienceClient /></MotionBoundary>;
 }
