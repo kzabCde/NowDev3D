@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./phase5.css";
+import "./phase51.css";
 
 export const metadata: Metadata = {
-  title: "NowDev3D — Motion Presentation",
+  title: "NowDev3D — Motion Art Direction",
   description:
-    "A monochrome motion-presentation portfolio by NowhereDEV with scroll-driven storytelling, project-specific graphics and lightweight WebGL.",
+    "A monochrome motion-design portfolio by NowhereDEV with cinematic slide transitions, kinetic typography, SVG path animation and lightweight WebGL.",
 };
 
 export const viewport: Viewport = {
