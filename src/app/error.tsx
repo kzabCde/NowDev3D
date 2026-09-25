@@ -8,16 +8,16 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
   }, [error]);
 
   return (
-    <main className="experience-shell">
+    <main className="experience-shell phase04-shell">
       <section className="story-chapter genesis">
         <div className="story-card story-card-large">
-          <p className="eyebrow">NOWDEV3D / RECOVERY MODE</p>
-          <h1>Signal interrupted.<br /><span>Page recovered.</span></h1>
+          <p className="eyebrow">NOWDEV3D / MONOCHROME RECOVERY MODE</p>
+          <h1>Signal interrupted.<br /><span>System recovered.</span></h1>
           <p className="story-lead">
-            เกิด client-side error ระหว่างโหลดประสบการณ์ 3D แต่ระบบ recovery ป้องกันไม่ให้ทั้งหน้าเว็บล้ม
+            เกิด client-side error ระหว่างโหลดประสบการณ์ 3D แต่ recovery layer แยกความผิดพลาดออกจากหน้าเว็บหลักเรียบร้อยแล้ว
           </p>
           <p className="story-lead" style={{ fontFamily: "var(--font-mono)", fontSize: 11, opacity: 0.72 }}>
-            {error.message || "Unknown runtime error"}{error.digest ? ` · ${error.digest}` : ""}
+            DIAGNOSTIC: {error.message || "Unknown runtime error"}{error.digest ? ` · ${error.digest}` : ""}
           </p>
           <button className="ghost-button" type="button" onClick={reset} style={{ marginTop: 28 }}>
             RETRY EXPERIENCE
