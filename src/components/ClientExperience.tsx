@@ -12,12 +12,14 @@ const ExperienceClient = dynamic(
   },
 );
 
-type SupportState = "checking" | "supported" | "unsupported";
+type SupportState = "checking" | "supported" | "unsupported" | "asset-error";
 
 type BoundaryState = {
   failed: boolean;
   message: string;
 };
+
+const HERO_MODEL_URL = "/models/neural-core-hero.glb";
 
 function BootScreen() {
   return (
@@ -27,7 +29,7 @@ function BootScreen() {
         <p>NEURAL GALAXY / INITIALIZING CLIENT</p>
         <strong>3D</strong>
         <div className="loading-track"><span style={{ width: "42%" }} /></div>
-        <small>CHECKING WEBGL + CLIENT RUNTIME</small>
+        <small>CHECKING WEBGL + GLB INTEGRITY</small>
       </div>
     </main>
   );
@@ -115,7 +117,7 @@ class ExperienceBoundary extends Component<{ children: ReactNode }, BoundaryStat
   }
 
   private retry = () => {
-    this.setState({ failed: false, message: "" });
+    window.location.reload();
   };
 
   render() {
@@ -139,20 +141,86 @@ function detectWebGL(): boolean {
   }
 }
 
+async function refreshAndValidateHero(signal: AbortSignal): Promise<string | null> {
+  try {
+    // `reload` deliberately refreshes the exact legacy cache key. Earlier releases
+    // served this mutable filename with `immutable`, so a normal fetch can preserve
+    // a truncated GLB even after the CDN has a corrected asset.
+    const response = await fetch(HERO_MODEL_URL, { cache: "reload", signal });
+    if (!response.ok) return `Hero GLB returned HTTP ${response.status}.`;
+    const buffer = await response.arrayBuffer();
+    if (buffer.byteLength < 20) return `Hero GLB is too small (${buffer.byteLength} bytes).`;
+
+    const bytes = new Uint8Array(buffer);
+    if (bytes[0] !== 0x67 || bytes[1] !== 0x6c || bytes[2] !== 0x54 || bytes[3] !== 0x46) {
+      return "Hero GLB magic header is invalid.";
+    }
+
+    const view = new DataView(buffer);
+    const version = view.getUint32(4, true);
+    const declaredLength = view.getUint32(8, true);
+    if (version !== 2) return `Hero GLB version ${version} is unsupported.`;
+    if (declaredLength !== buffer.byteLength) {
+      return `Hero GLB length mismatch: header ${declaredLength}, response ${buffer.byteLength}.`;
+    }
+
+    let offset = 12;
+    let hasJson = false;
+    while (offset < buffer.byteLength) {
+      if (offset + 8 > buffer.byteLength) return "Hero GLB has a truncated chunk header.";
+      const chunkLength = view.getUint32(offset, true);
+      const chunkType = view.getUint32(offset + 4, true);
+      offset += 8;
+      if (offset + chunkLength > buffer.byteLength) return "Hero GLB chunk exceeds response bounds.";
+      if (chunkType === 0x4e4f534a) hasJson = true; // JSON
+      offset += chunkLength;
+    }
+    if (!hasJson || offset !== buffer.byteLength) return "Hero GLB chunk table is invalid.";
+    return null;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") return "Hero GLB check was cancelled.";
+    return `Hero GLB check failed: ${error instanceof Error ? error.message : String(error)}`;
+  }
+}
+
 export function ClientExperience() {
   const [support, setSupport] = useState<SupportState>("checking");
+  const [diagnostic, setDiagnostic] = useState("");
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setSupport(detectWebGL() ? "supported" : "unsupported");
-    });
-    return () => cancelAnimationFrame(frame);
+    const controller = new AbortController();
+    let disposed = false;
+
+    const initialize = async () => {
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      if (disposed) return;
+      if (!detectWebGL()) {
+        setDiagnostic("WebGL is unavailable or blocked by this browser/device.");
+        setSupport("unsupported");
+        return;
+      }
+
+      const heroError = await refreshAndValidateHero(controller.signal);
+      if (disposed) return;
+      if (heroError) {
+        setDiagnostic(heroError);
+        setSupport("asset-error");
+        return;
+      }
+      setSupport("supported");
+    };
+
+    void initialize();
+    return () => {
+      disposed = true;
+      controller.abort();
+    };
   }, []);
 
   if (support === "checking") return <BootScreen />;
 
-  if (support === "unsupported") {
-    return <SafeExperience reason="WebGL is unavailable or blocked by this browser/device." onRetry={() => window.location.reload()} />;
+  if (support === "unsupported" || support === "asset-error") {
+    return <SafeExperience reason={diagnostic || "3D initialization failed."} onRetry={() => window.location.reload()} />;
   }
 
   return (
